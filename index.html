@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flag-icon-css/3.5.0/css/flag-icon.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Enhanced Global Currency Converter</title>
+    <style>
+         :root {
+            --bg-color: #f0f8ff;
+            --text-color: #333;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --primary-color: #2980b9;
+            --secondary-color: #6dd5fa;
+        }
+        
+        .dark-mode {
+            --bg-color: #1a1a2e;
+            --text-color: #e0e0e0;
+            --card-bg: rgba(30, 30, 50, 0.95);
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .converter {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 10px rgba(41, 128, 185, 0.3);
+        }
+        
+        .logo svg {
+            width: 50px;
+            height: 50px;
+            fill: white;
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+        
+        input,
+        .choices__inner {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            transition: all 0.3s ease;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+        
+        input:focus,
+        .choices__inner:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        #result {
+            margin-top: 25px;
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--primary-color);
+            min-height: 30px;
+        }
+        
+        .choices {
+            margin-bottom: 0;
+        }
+        
+        .choices__inner {
+            background-color: var(--card-bg);
+            min-height: 45px;
+        }
+        
+        .flag-icon {
+            width: 24px;
+            height: 18px;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+        
+        .choices__list--dropdown .choices__item--selectable {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+        }
+        
+        #historicalChart {
+            margin-top: 30px;
+        }
+        
+        .favorite-currencies {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .favorite-currency {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .favorite-currency:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        .currency-info-card {
+            background-color: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .theme-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-switcher:hover {
+            background-color: var(--secondary-color);
+        }
+        
+        #realTimeUpdates {
+            margin-top: 20px;
+            font-style: italic;
+            color: var(--text-color);
+        }
+    </style>
+</head>
+
+<body>
+    <button id="themeSwitcher" class="theme-switcher">Toggle Dark Mode</button>
+    <div class="converter">
+        <div class="logo">
+            <svg viewBox="0 0 24 24">
+                <path d="M12.89 11.1c-1.78-.59-2.64-.96-2.64-1.9 0-1.02 1.11-1.39 1.81-1.39 1.31 0 1.79.99 1.9 1.34l1.58-.67c-.15-.44-.82-1.91-2.66-2.23V5h-1.75v1.26c-2.15.36-2.99 1.95-2.99 3.08 0 2.94 2.43 3.47 4.09 4.02 1.35.44 2.56.92 2.56 2.24 0 1.08-1.13 1.73-2.16 1.73-2.06 0-2.52-1.88-2.63-2.34l-1.6.67c.36 1.01 1.19 2.46 3.06 2.88V20h1.75v-1.45c.9-.15 2.96-.74 2.96-3.18 0-3.09-2.53-3.84-4.28-4.27zM21 11.5c0-4.65-3.85-8.5-8.5-8.5S4 6.85 4 11.5 7.85 20 12.5 20 21 16.15 21 11.5zm-2 0c0 3.58-2.92 6.5-6.5 6.5S6 15.08 6 11.5 8.92 5 12.5 5s6.5 2.92 6.5 6.5z"/>
+            </svg>
+        </div>
+        <h1>Enhanced Global Currency Converter</h1>
+        <div class="form-group">
+            <label for="fromCurrency">From Currency:</label>
+            <select id="fromCurrency"></select>
+        </div>
+        <div class="form-group">
+            <label for="toCurrency">To Currency:</label>
+            <select style="color:black" id="toCurrency"></select>
+        </div>
+        <div class="form-group">
+            <label for="amount">Amount:</label>
+            <input type="number" id="amount" placeholder="Enter amount">
+        </div>
+        <button id="convertButton">Convert Currency</button>
+        <div id="result"></div>
+        <div id="realTimeUpdates"></div>
+        <div class="favorite-currencies" id="favoriteCurrencies"></div>
+        <canvas id="historicalChart"></canvas>
+        <!-- <div id="currencyInfo" class="currency-info-card"></div> -->
+    </div>
+    <!-- ... (previous HTML code remains the same) ... -->
+
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const fromCurrencySelect = document.getElementById('fromCurrency');
+            const toCurrencySelect = document.getElementById('toCurrency');
+            const amountInput = document.getElementById('amount');
+            const resultDisplay = document.getElementById('result');
+            const convertButton = document.getElementById('convertButton');
+            const favoriteCurrenciesContainer = document.getElementById('favoriteCurrencies');
+            const realTimeUpdates = document.getElementById('realTimeUpdates');
+            const currencyInfoCard = document.getElementById('currencyInfo');
+            const themeSwitcher = document.getElementById('themeSwitcher');
+            const historicalChartCanvas = document.getElementById('historicalChart');
+
+            const fromChoices = new Choices(fromCurrencySelect, {
+                searchEnabled: true,
+                allowHTML: true,
+                placeholder: true,
+                placeholderValue: "Select currency"
+            });
+            const toChoices = new Choices(toCurrencySelect, {
+                searchEnabled: true,
+                allowHTML: true,
+                placeholder: true,
+                placeholderValue: "Select currency"
+            });
+
+            const currencyToFlag = {
+                USD: 'us',
+                EUR: 'eu',
+                GBP: 'gb',
+                AED: 'ae',
+                JPY: 'jp',
+                AUD: 'au',
+                CAD: 'ca',
+                CHF: 'ch',
+                CNY: 'cn',
+                INR: 'in',
+                MXN: 'mx',
+                BRL: 'br',
+                ZAR: 'za',
+                NZD: 'nz',
+                RUB: 'ru',
+                KRW: 'kr',
+                SEK: 'se',
+                NOK: 'no',
+                DKK: 'dk',
+                SGD: 'sg',
+                HKD: 'hk',
+                TRY: 'tr',
+                SAR: 'sa',
+                EGP: 'eg',
+                THB: 'th',
+                VND: 'vn',
+                PKR: 'pk',
+                IDR: 'id',
+                MYR: 'my',
+                PHP: 'ph'
+            };
+
+            let favoriteCurrencies = JSON.parse(localStorage.getItem('favoriteCurrencies')) || ['USD', 'EUR', 'GBP', 'JPY'];
+            let currentRates = {};
+            let historicalChart;
+
+            function updateFavoriteCurrencies() {
+                favoriteCurrenciesContainer.innerHTML = '';
+                favoriteCurrencies.forEach(currency => {
+                    const button = document.createElement('button');
+                    button.classList.add('favorite-currency');
+                    button.innerHTML = `<span class="flag-icon flag-icon-${currencyToFlag[currency]}"></span>${currency}`;
+                    button.addEventListener('click', () => {
+                        fromChoices.setChoiceByValue(currency);
+                    });
+                    favoriteCurrenciesContainer.appendChild(button);
+                });
+            }
+
+            function startRealTimeUpdates() {
+                setInterval(() => {
+                    fetch('https://api.exchangerate-api.com/v4/latest/USD')
+                        .then(response => response.json())
+                        .then(data => {
+                            currentRates = data.rates;
+                            const timestamp = new Date(data.time_last_updated * 1000).toLocaleString();
+                            realTimeUpdates.textContent = `Last updated: ${timestamp}`;
+                        })
+                        .catch(error => {
+                            console.error('Error fetching real-time rates:', error);
+                        });
+                }, 60000); // Update every minute
+            }
+
+            function populateCurrencies(rates) {
+                const currencies = Object.keys(rates);
+                const sortedCurrencies = currencies.sort((a, b) => {
+                    const aHasFlag = currencyToFlag[a] ? 1 : 0;
+                    const bHasFlag = currencyToFlag[b] ? 1 : 0;
+                    if (aHasFlag !== bHasFlag) return bHasFlag - aHasFlag;
+                    return a.localeCompare(b);
+                });
+
+                sortedCurrencies.forEach(currency => {
+                    const flagClass = currencyToFlag[currency] ? `flag-icon-${currencyToFlag[currency]}` : '';
+                    const flagSpan = flagClass ? `<span class="flag-icon ${flagClass}"></span>` : '';
+
+                    fromChoices.setChoices([{
+                        value: currency,
+                        label: `${flagSpan}${currency}`,
+                        selected: currency === 'USD'
+                    }], 'value', 'label', false);
+
+                    toChoices.setChoices([{
+                        value: currency,
+                        label: `${flagSpan}${currency}`,
+                        selected: currency === 'EUR'
+                    }], 'value', 'label', false);
+                });
+            }
+
+            function displayCurrencyInfo(currency) {
+                fetch(`https://restcountries.com/v3.1/currency/${currency}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.length > 0) {
+                            const country = data[0];
+                            currencyInfoCard.innerHTML = `
+                            <h3>${currency} Information</h3>
+                            <p>Used in: ${country.name.common}</p>
+                            <p>Capital: ${country.capital?.[0] || 'N/A'}</p>
+                            <p>Region: ${country.region}</p>
+                            <p>Population: ${country.population.toLocaleString()}</p>
+                        `;
+                        } else {
+                            currencyInfoCard.innerHTML = `<p>No information available for ${currency}</p>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching currency information:', error);
+                        currencyInfoCard.innerHTML = `<p>Error fetching information for ${currency}</p>`;
+                    });
+            }
+
+            function updateHistoricalChart(fromCurrency, toCurrency) {
+                const endDate = new Date();
+                const startDate = new Date();
+                startDate.setMonth(startDate.getMonth() - 1);
+
+                fetch(`https://api.exchangerate.host/timeseries?start_date=${startDate.toISOString().split('T')[0]}&end_date=${endDate.toISOString().split('T')[0]}&base=${fromCurrency}&symbols=${toCurrency}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const dates = Object.keys(data.rates);
+                        const rates = dates.map(date => data.rates[date][toCurrency]);
+
+                        if (historicalChart) {
+                            historicalChart.destroy();
+                        }
+
+                        historicalChart = new Chart(historicalChartCanvas, {
+                            type: 'line',
+                            data: {
+                                labels: dates,
+                                datasets: [{
+                                    label: `${fromCurrency} to ${toCurrency} Exchange Rate`,
+                                    data: rates,
+                                    borderColor: 'rgb(75, 192, 192)',
+                                    tension: 0.1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                scales: {
+                                    x: {
+                                        type: 'time',
+                                        time: {
+                                            unit: 'day'
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    })
+                    .catch(error => {
+                        console.error('Error fetching historical data:', error);
+                    });
+            }
+
+            function convertCurrency() {
+                const fromCurrency = fromCurrencySelect.value;
+                const toCurrency = toCurrencySelect.value;
+                const amount = amountInput.value;
+
+                if (!amount || isNaN(amount)) {
+                    resultDisplay.textContent = "Please enter a valid amount.";
+                    return;
+                }
+
+                resultDisplay.textContent = "Converting...";
+
+                const rate = currentRates[toCurrency] / currentRates[fromCurrency];
+                const result = (amount * rate).toFixed(2);
+                const fromFlag = currencyToFlag[fromCurrency] ? `<span class="flag-icon flag-icon-${currencyToFlag[fromCurrency]}"></span>` : '';
+                const toFlag = currencyToFlag[toCurrency] ? `<span class="flag-icon flag-icon-${currencyToFlag[toCurrency]}"></span>` : '';
+                resultDisplay.innerHTML = `${fromFlag}${amount} ${fromCurrency} = ${toFlag}${result} ${toCurrency}`;
+
+                updateHistoricalChart(fromCurrency, toCurrency);
+                displayCurrencyInfo(toCurrency);
+            }
+
+            function toggleTheme() {
+                document.body.classList.toggle('dark-mode');
+                const isDarkMode = document.body.classList.contains('dark-mode');
+                localStorage.setItem('darkMode', isDarkMode);
+            }
+
+            // Initialize the app
+            fetch('https://api.exchangerate-api.com/v4/latest/USD')
+                .then(response => response.json())
+                .then(data => {
+                    currentRates = data.rates;
+                    populateCurrencies(currentRates);
+                    updateFavoriteCurrencies();
+                    startRealTimeUpdates();
+
+                    // Set initial theme
+                    const savedDarkMode = localStorage.getItem('darkMode');
+                    if (savedDarkMode === 'true') {
+                        document.body.classList.add('dark-mode');
+                    }
+
+                    // Event listeners
+                    convertButton.addEventListener('click', convertCurrency);
+                    themeSwitcher.addEventListener('click', toggleTheme);
+
+                    fromCurrencySelect.addEventListener('change', () => {
+                        const selectedCurrency = fromCurrencySelect.value;
+                        if (!favoriteCurrencies.includes(selectedCurrency)) {
+                            favoriteCurrencies.push(selectedCurrency);
+                            favoriteCurrencies = favoriteCurrencies.slice(-4); // Keep only the last 4
+                            localStorage.setItem('favoriteCurrencies', JSON.stringify(favoriteCurrencies));
+                            updateFavoriteCurrencies();
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching exchange rates:', error);
+                    resultDisplay.textContent = "Error loading currency data. Please try again later.";
+                });
+        });
+    </script>
+</body>
+
+</html>

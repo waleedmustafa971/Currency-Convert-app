@@ -1,0 +1,13 @@
+{
+    "manifest_version": 3,
+    "name": "Currency Converter",
+    "description": "Convert currencies quickly and easily.",
+    "version": "1.0",
+    "action": {
+        "default_popup": "index.html",
+        "default_title": "Currency Converter"
+    },
+    "permissions": [
+        "activeTab"
+    ]
+}
